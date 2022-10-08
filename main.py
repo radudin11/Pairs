@@ -105,8 +105,27 @@ def nextSeq(seq, pairList):
                 possibleSeq.append(newSeq)
     return possibleSeq
 
+def printPairs(pairList):
+    # print the pairs
+    for pair in pairList:
+        print(pair.top)
+        print(pair.bottom)
+        print("")
+                
 
-def findSeq(seq, pairList, itter):
+def parseArgs():
+    parser = argparse.ArgumentParser(description='Find sequence of pairs that can be connected \
+        so that the numbers resulted from the concatenation of the pairs are equal')
+
+    parser.add_argument('--inputFile', '-f', type=argparse.FileType('r'), help='input file')
+    parser.add_argument('--max-itter', type=int, help='maximum number of itterations, default is 10\n For the best performance \
+        use the length of the sollution(if known) as the maximum number of itterations(matters only in DFS)')
+    parser.add_argument('--algorithm', '-a', type=str, help='algorithm to use, default is BFS\n \
+        Available algorithms: DFS, BFS')
+
+    return parser.parse_args()
+
+def findSeqDFS(seq, pairList, itter):
     # find the sequence of pairs that can be connected
     # so that the numbers resulted from the concatenation of the pairs are
     # equal
@@ -123,40 +142,68 @@ def findSeq(seq, pairList, itter):
         return False
 
     for newSeq in possibleSeq:
-        #debug print("Trying seq at itter " + str(itter))
-        #debug print(newSeq.topSeq)
-        #debug print(newSeq.bottomSeq)
+        print("Trying seq at itter " + str(itter))
+        printSeq(newSeq)
 
         # check if the sequence is complete
         if newSeq.topSeq.__len__() == newSeq.bottomSeq.__len__():
-            #debug print("Found it")
-            #debug print(newSeq.topSeq)
-            #debug print(newSeq.bottomSeq)
-            #debug print("Id list:")
-            #debug print(newSeq.idList)
+            print("Found it")
+            printSeq(newSeq)
             return True
         else:
             # if the sequence is not complete => continue
-            if findSeq(newSeq, pairList, itter+1):
+            if findSeqDFS(newSeq, pairList, itter+1):
                 return True
 
-def printPairs(pairList):
-    # print the pairs
-    for pair in pairList:
-        print(pair.top)
-        print(pair.bottom)
-        print("")
-                
+def hasSequenceDFS(pairList, possibleSeq):
+    for currentSeq in possibleSeq:
+        print("Start seq")
+        printSeq(currentSeq)
 
-def parseArgs():
-    parser = argparse.ArgumentParser(description='Find sequence of pairs that can be connected \
-        so that the numbers resulted from the concatenation of the pairs are equal')
+        # find the sequence of pairs that can be connected
+        # start from itteration 1
+        if findSeqDFS(currentSeq, pairList, 1):
+            print("yes")
+            return
+    # if no sequence was found after MAX_ITTER itterations => no solution
+    print("no")
 
-    parser.add_argument('--inputFile', '-f', type=argparse.FileType('r'), help='input file')
-    parser.add_argument('--max-itter', type=int, help='maximum number of itterations, default is 10\n For the best performance \
-        use the length of the sollution(if known) as the maximum number of itterations')
+def findSequenceBFS(pairList, possibleSeq,itter):
+    # find the sequence of pairs that can be connected
+    # start from itteration 1
+    if itter > MAX_ITTER:
+        return False
+    
+    
+    print("Itter " + str(itter) + ":\n")
+    nextPossibleSeq = []
+    for currentSeq in possibleSeq:
+        printSeq(currentSeq)
+        if currentSeq.topSeq.__len__() == currentSeq.bottomSeq.__len__():
+            # if the sequence is complete => solution found
+            print("Found it")
+            printSeq(currentSeq)
+            return True
+        else:
+            nextPossibleSeq.extend(nextSeq(currentSeq, pairList))
+    if findSequenceBFS(pairList, nextPossibleSeq, itter+1):
+        return True
 
-    return parser.parse_args()
+def hasSequenceBFS(pairList, possibleSeq):
+    if findSequenceBFS(pairList, possibleSeq, 1):
+        print("yes")
+        return
+    # if no sequence was found after MAX_ITTER itterations => no solution
+    print("no")
+
+def printSeq(seq):
+    # print the sequence
+    print("Sequence:")
+    print(seq.topSeq)
+    print(seq.bottomSeq)
+    print("Id list:")
+    print(seq.idList)
+    print("")
 
 def main():
     args = parseArgs()
@@ -173,23 +220,29 @@ def main():
         inputFile = open(filePath, "r")
         pairList = readPairs(inputFile)
 
-    #debug printPairs(pairList)
+    printPairs(pairList)
 
     # find all possible sequences that can start a sequence
     possibleSeq = startSeq(pairList)
-
-    for currentSeq in possibleSeq:
-        #debug print("Start seq")
-        #debug print(currentSeq.topSeq)
-        #debug print(currentSeq.bottomSeq)
-
-        # find the sequence of pairs that can be connected
-        # start from itteration 1
-        if findSeq(currentSeq, pairList, 1):
-            print("yes")
-            return
-    # if no sequence was found after MAX_ITTER itterations => no solution
-    print("no")
+    if possibleSeq.__len__() == 0:
+        print("no")
+        return
+    
+    if args.algorithm:
+        if args.algorithm == "DFS":
+            print("Using DFS...\n")
+            hasSequenceDFS(pairList, possibleSeq)
+        elif args.algorithm == "BFS":
+            print("Using BFS...\n")
+            hasSequenceBFS(pairList, possibleSeq)
+        else:
+            print("Invalid algorithm")
+    else:
+        # use BFS by default
+        print("Using BFS...\n")
+        hasSequenceBFS(pairList, possibleSeq)
+    
+    #TODO: add output file option
 
 if __name__ == "__main__":
     main()
