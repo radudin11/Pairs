@@ -1,4 +1,7 @@
-# Monitors problem:
+# repo: https://github.com/radudin11/Pairs
+
+
+# Pairs problem:
 # input = pairs of two numbers in binary
 # output = yes/no if there is a sequence of pairs that can be connected
 # so that the numbers resulted from the concatenation of the pairs are
@@ -10,14 +13,24 @@
 
 import copy
 import argparse
+from distutils.log import debug
 
 MAX_ITTER = 10
+DEBUG = False
 
 class Seq:
-    def __init__(self, topSeq, bottomSeq, idList):
+    def __init__(self, topSeq: list, bottomSeq:list, idList: list):
         self.topSeq = topSeq
         self.bottomSeq = bottomSeq
         self.idList = idList
+
+    def __eq__(self, other: 'Seq'):
+        if self.topSeq == other.topSeq and self.bottomSeq == other.bottomSeq:
+            return True
+        return False
+    
+    def __str__(self):
+        return str(self.topSeq) +"\n"+ str(self.bottomSeq) +"\nId list:\n"+ str(self.idList) + "\n"
 
     def print(self):
         print(self.topSeq)
@@ -31,6 +44,8 @@ class Pair:
         self.top = top
         self.bottom = bottom
         self.id = id
+    def __str__(self):
+        return  "Pair: " + str(self.id) +"\n"+ str(self.top) + "\n" + str(self.bottom) + "\n"
 
 def readPairs(inputFile):
     step = 0
@@ -70,20 +85,13 @@ def startSeq(pairList):
 
 def checkSeq(seq):
     # check if the sequence is valid
-    # if the numbers until the shortest length
-    # resulted from the concatenation of the pairs are
-    # equal
-    topSeq = ""
-    bottomSeq = ""
-    # convert the numbers to strings
-    for nr in seq.topSeq:
-        topSeq += str(nr)
-    for nr in seq.bottomSeq:
-        bottomSeq += str(nr)
-    # get shorter sequence
-    minLen = min(topSeq.__len__(), bottomSeq.__len__())
 
-    if topSeq[:minLen] == bottomSeq[:minLen]:
+    # if the numbers until the shortest length resulted
+    # from the concatenation of the pairs are equal
+    
+    minLen = min(seq.topSeq.__len__(), seq.bottomSeq.__len__())
+
+    if seq.topSeq[:minLen] == seq.bottomSeq[:minLen]:
         return 1
     else:
         return 0
@@ -115,9 +123,7 @@ def nextSeq(seq, pairList):
 def printPairs(pairList):
     # print the pairs
     for pair in pairList:
-        print(pair.top)
-        print(pair.bottom)
-        print("")
+        print(str(pair))
                 
 
 def parseArgs():
@@ -129,6 +135,7 @@ def parseArgs():
         use the length of the sollution(if known) as the maximum number of itterations(matters only in DFS)')
     parser.add_argument('--algorithm', '-a', type=str, help='algorithm to use, default is BFS\n \
         Available algorithms: DFS, BFS')
+    parser.add_argument("-d", "--debug", help="increase output verbosity", action="store_true")
 
     return parser.parse_args()
 
@@ -149,13 +156,15 @@ def findSeqDFS(seq, pairList, itter):
         return False
 
     for newSeq in possibleSeq:
-        print("Trying seq at itter " + str(itter))
-        newSeq.print()
+        if DEBUG:
+            print("Trying seq at itter " + str(itter))
+            newSeq.print()
 
         # check if the sequence is complete
         if newSeq.topSeq.__len__() == newSeq.bottomSeq.__len__():
-            print("Found it")
-            newSeq.print()
+            if DEBUG:
+                print("Found solution")
+                print(newSeq)
             return True
         else:
             # if the sequence is not complete => continue
@@ -164,8 +173,9 @@ def findSeqDFS(seq, pairList, itter):
 
 def hasSequenceDFS(pairList, possibleSeq):
     for currentSeq in possibleSeq:
-        print("Start seq")
-        currentSeq.print()
+        if DEBUG:
+            print("Start seq")
+            print(currentSeq)
         # find the sequence of pairs that can be connected
         # start from itteration 1
         if findSeqDFS(currentSeq, pairList, 1):
@@ -179,19 +189,29 @@ def findSequenceBFS(pairList, possibleSeq,itter):
     # start from itteration 1
     if itter > MAX_ITTER:
         return False
+    if possibleSeq.__len__() == 0:
+        return False
     
+    if DEBUG:
+        print("Itter " + str(itter) + ":\n")
     
-    print("Itter " + str(itter) + ":\n")
     nextPossibleSeq = []
+    i = 1 # counter for the number of sequences
     for currentSeq in possibleSeq:
-        currentSeq.print()
+        if DEBUG:
+            print("seq " + str(i))
+            print(str(currentSeq))
         if currentSeq.topSeq.__len__() == currentSeq.bottomSeq.__len__():
             # if the sequence is complete => solution found
-            print("Found it")
-            currentSeq.print()
+            if DEBUG:
+                print("Found it")
+                print(str(currentSeq))
             return True
         else:
+            # if the sequence is not complete => continue
             nextPossibleSeq.extend(nextSeq(currentSeq, pairList))
+        i += 1
+    
     if findSequenceBFS(pairList, nextPossibleSeq, itter+1):
         return True
 
@@ -208,6 +228,9 @@ def main():
     if args.max_itter:
         global MAX_ITTER
         MAX_ITTER = args.max_itter
+    if args.debug:
+        global DEBUG
+        DEBUG = True
     
     if args.inputFile:
         pairList = readPairs(args.inputFile)
@@ -216,8 +239,8 @@ def main():
         filePath = input("Enter file path: ")
         inputFile = open(filePath, "r")
         pairList = readPairs(inputFile)
-
-    printPairs(pairList)
+    if DEBUG:
+        printPairs(pairList)
 
     # find all possible sequences that can start a sequence
     possibleSeq = startSeq(pairList)
@@ -227,16 +250,19 @@ def main():
     
     if args.algorithm:
         if args.algorithm == "DFS":
-            print("Using DFS...\n")
+            if DEBUG:
+                print("Using DFS...\n")
             hasSequenceDFS(pairList, possibleSeq)
         elif args.algorithm == "BFS":
-            print("Using BFS...\n")
+            if DEBUG:
+                print("Using BFS...\n")
             hasSequenceBFS(pairList, possibleSeq)
         else:
             print("Invalid algorithm")
     else:
         # use BFS by default
-        print("Using BFS...\n")
+        if DEBUG:
+            print("Using BFS...\n")
         hasSequenceBFS(pairList, possibleSeq)
     
     #TODO: add output file option
