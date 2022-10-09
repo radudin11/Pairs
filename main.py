@@ -13,18 +13,22 @@
 
 import copy
 import argparse
+from io import BufferedReader
 import time
 
 MAX_ITTER = 10
 DEBUG = False
 
 class Pair:
-    def __init__(self, top, bottom, id):
+    def __init__(self, top: list, bottom: list, id: int):
         self.top = top
         self.bottom = bottom
         self.id = id
-    def __str__(self):
+    def __str__(self) -> str: 
         return  "Pair: " + str(self.id) +"\n"+ str(self.top) + "\n" + str(self.bottom) + "\n"
+
+    def __repr__(self) -> str:
+        return self.__str__()
 
 
 class Seq:
@@ -33,18 +37,18 @@ class Seq:
         self.bottomSeq = bottomSeq
         self.idList = idList
 
-    def __eq__(self, other: 'Seq'):
+    def __eq__(self, other: 'Seq') -> bool:
         if self.topSeq == other.topSeq and self.bottomSeq == other.bottomSeq:
             return True
         return False
     
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.topSeq) +"\n"+ str(self.bottomSeq) +"\nId list:\n"+ str(self.idList) + "\n"
 
-    def __repr__(self):
-        return str(self)
+    def __repr__(self) -> str:
+        return self.__str__()
 
-    def isExtendable(self, pair: Pair):
+    def isExtendable(self, pair: Pair) -> bool:
         if self.topSeq.__len__() > self.bottomSeq.__len__() \
             and pair.bottom[0] == self.topSeq[self.bottomSeq.__len__()]:
             return True
@@ -59,7 +63,7 @@ class Seq:
         self.idList.append(pair.id)
 
 
-def readPairs(inputFile):
+def readPairs(inputFile: BufferedReader) -> list:
     step = 0
     pair = Pair([], [], 0)
     pairList = []
@@ -81,21 +85,20 @@ def readPairs(inputFile):
 
         
 
-def startSeq(pairList):
+def startSeq(pairList: list) -> list:
     # find all possible pairs that can start a sequence
+    # return a list of sequences
     possibleSeq = []
     for pair in pairList:
         seq = Seq([], [], [])
         if pair.top[0] == pair.bottom[0]:
             # if the first numbers of each part of 
             # the pair are equal
-            seq.topSeq.extend(pair.top)
-            seq.bottomSeq.extend(pair.bottom)
-            seq.idList.append(pair.id)
+            seq.extend(pair)
             possibleSeq.append(seq)
     return possibleSeq
 
-def checkSeq(seq):
+def checkSeq(seq: Seq) -> bool:
     # check if the sequence is valid
 
     # if the numbers until the shortest length resulted
@@ -104,12 +107,14 @@ def checkSeq(seq):
     minLen = min(seq.topSeq.__len__(), seq.bottomSeq.__len__())
 
     if seq.topSeq[:minLen] == seq.bottomSeq[:minLen]:
-        return 1
+        return True
     else:
-        return 0
+        return False
 
-def nextSeq(seq, pairList):
+def nextSeq(seq: Seq, pairList: list) -> list:
     # find all possible pairs that can be connected to the current sequence
+    # return a list of the extended sequences
+
     possibleSeq = []
     for pair in pairList:
         newSeq = Seq(copy.copy(seq.topSeq), copy.copy(seq.bottomSeq), copy.copy(seq.idList))  # copy the current sequence
@@ -121,13 +126,13 @@ def nextSeq(seq, pairList):
                 possibleSeq.append(newSeq)
     return possibleSeq
 
-def printPairs(pairList):
+def printPairs(pairList: list):
     # print the pairs
     for pair in pairList:
         print(str(pair))
                 
 
-def parseArgs():
+def parseArgs() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Find sequence of pairs that can be connected \
         so that the numbers resulted from the concatenation of the pairs are equal')
 
@@ -140,10 +145,8 @@ def parseArgs():
 
     return parser.parse_args()
 
-def findSeqDFS(seq, pairList, itter):
-    # find the sequence of pairs that can be connected
-    # so that the numbers resulted from the concatenation of the pairs are
-    # equal
+def findSeqDFS(seq: Seq, pairList: list, itter: int) -> bool:
+    # returns True if a valid sequence is found and False if not
     
     # if we have reached the maximum number of itterations => no solution
     if (itter > MAX_ITTER):
@@ -172,7 +175,7 @@ def findSeqDFS(seq, pairList, itter):
             if findSeqDFS(newSeq, pairList, itter+1):
                 return True
 
-def hasSequenceDFS(pairList, possibleSeq):
+def hasSequenceDFS(pairList: list, possibleSeq: list):
     for currentSeq in possibleSeq:
         if DEBUG:
             print("Start seq")
@@ -185,9 +188,9 @@ def hasSequenceDFS(pairList, possibleSeq):
     # if no sequence was found after MAX_ITTER itterations => no solution
     print("no")
 
-def findSequenceBFS(pairList, possibleSeq,itter):
-    # find the sequence of pairs that can be connected
-    # start from itteration 1
+def findSequenceBFS(pairList: list, possibleSeq: list,itter: int) -> bool:
+    # returns True if a valid sequence is found and False if not
+
     if itter > MAX_ITTER:
         return False
     if possibleSeq.__len__() == 0:
@@ -216,7 +219,7 @@ def findSequenceBFS(pairList, possibleSeq,itter):
     if findSequenceBFS(pairList, nextPossibleSeq, itter+1):
         return True
 
-def hasSequenceBFS(pairList, possibleSeq):
+def hasSequenceBFS(pairList: list, possibleSeq: list):
     if findSequenceBFS(pairList, possibleSeq, 1):
         print("yes")
         return
@@ -249,6 +252,7 @@ def main():
         print("no")
         return
     
+    # select the algorithm
     if args.algorithm:
         if args.algorithm == "DFS":
             if DEBUG:
@@ -271,5 +275,5 @@ def main():
 if __name__ == "__main__":
     start_time = time.time()
     main()
-    if DEBUG:
+    if DEBUG: # print the execution time
         print("--- %s seconds ---" % (time.time() - start_time))
