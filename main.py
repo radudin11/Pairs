@@ -19,6 +19,13 @@ class Seq:
         self.bottomSeq = bottomSeq
         self.idList = idList
 
+    def print(self):
+        print(self.topSeq)
+        print(self.bottomSeq)
+        print("Id list:")
+        print(self.idList)
+        print("")
+
 class Pair:
     def __init__(self, top, bottom, id):
         self.top = top
@@ -143,12 +150,12 @@ def findSeqDFS(seq, pairList, itter):
 
     for newSeq in possibleSeq:
         print("Trying seq at itter " + str(itter))
-        printSeq(newSeq)
+        newSeq.print()
 
         # check if the sequence is complete
         if newSeq.topSeq.__len__() == newSeq.bottomSeq.__len__():
             print("Found it")
-            printSeq(newSeq)
+            newSeq.print()
             return True
         else:
             # if the sequence is not complete => continue
@@ -158,8 +165,7 @@ def findSeqDFS(seq, pairList, itter):
 def hasSequenceDFS(pairList, possibleSeq):
     for currentSeq in possibleSeq:
         print("Start seq")
-        printSeq(currentSeq)
-
+        currentSeq.print()
         # find the sequence of pairs that can be connected
         # start from itteration 1
         if findSeqDFS(currentSeq, pairList, 1):
@@ -178,11 +184,11 @@ def findSequenceBFS(pairList, possibleSeq,itter):
     print("Itter " + str(itter) + ":\n")
     nextPossibleSeq = []
     for currentSeq in possibleSeq:
-        printSeq(currentSeq)
+        currentSeq.print()
         if currentSeq.topSeq.__len__() == currentSeq.bottomSeq.__len__():
             # if the sequence is complete => solution found
             print("Found it")
-            printSeq(currentSeq)
+            currentSeq.print()
             return True
         else:
             nextPossibleSeq.extend(nextSeq(currentSeq, pairList))
@@ -195,15 +201,6 @@ def hasSequenceBFS(pairList, possibleSeq):
         return
     # if no sequence was found after MAX_ITTER itterations => no solution
     print("no")
-
-def printSeq(seq):
-    # print the sequence
-    print("Sequence:")
-    print(seq.topSeq)
-    print(seq.bottomSeq)
-    print("Id list:")
-    print(seq.idList)
-    print("")
 
 def main():
     args = parseArgs()
