@@ -13,10 +13,19 @@
 
 import copy
 import argparse
-from distutils.log import debug
+import time
 
 MAX_ITTER = 10
 DEBUG = False
+
+class Pair:
+    def __init__(self, top, bottom, id):
+        self.top = top
+        self.bottom = bottom
+        self.id = id
+    def __str__(self):
+        return  "Pair: " + str(self.id) +"\n"+ str(self.top) + "\n" + str(self.bottom) + "\n"
+
 
 class Seq:
     def __init__(self, topSeq: list, bottomSeq:list, idList: list):
@@ -32,20 +41,23 @@ class Seq:
     def __str__(self):
         return str(self.topSeq) +"\n"+ str(self.bottomSeq) +"\nId list:\n"+ str(self.idList) + "\n"
 
-    def print(self):
-        print(self.topSeq)
-        print(self.bottomSeq)
-        print("Id list:")
-        print(self.idList)
-        print("")
+    def __repr__(self):
+        return str(self)
 
-class Pair:
-    def __init__(self, top, bottom, id):
-        self.top = top
-        self.bottom = bottom
-        self.id = id
-    def __str__(self):
-        return  "Pair: " + str(self.id) +"\n"+ str(self.top) + "\n" + str(self.bottom) + "\n"
+    def isExtendable(self, pair: Pair):
+        if self.topSeq.__len__() > self.bottomSeq.__len__() \
+            and pair.bottom[0] == self.topSeq[self.bottomSeq.__len__()]:
+            return True
+        if self.topSeq.__len__() < self.bottomSeq.__len__() \
+            and pair.top[0] == self.bottomSeq[self.topSeq.__len__()]:
+            return True
+        return False
+
+    def extend(self, pair: Pair):
+        self.topSeq.extend(pair.top)
+        self.bottomSeq.extend(pair.bottom)
+        self.idList.append(pair.id)
+
 
 def readPairs(inputFile):
     step = 0
@@ -102,19 +114,8 @@ def nextSeq(seq, pairList):
     for pair in pairList:
         newSeq = Seq(copy.copy(seq.topSeq), copy.copy(seq.bottomSeq), copy.copy(seq.idList))  # copy the current sequence
         # take the shorter sequence and check for any matches
-        if seq.topSeq.__len__() < seq.bottomSeq.__len__() and  pair.top[0] == seq.bottomSeq[seq.topSeq.__len__()]:
-            # if the first number of the top part of the pair is equal to number in the bottom sequence at the same position
-            newSeq.topSeq.extend(pair.top)
-            newSeq.bottomSeq.extend(pair.bottom)
-            newSeq.idList.append(pair.id)
-            if checkSeq(newSeq):
-                # if the sequence is valid
-                possibleSeq.append(newSeq)
-        elif seq.topSeq.__len__() > seq.bottomSeq.__len__() and pair.bottom[0] == seq.topSeq[seq.bottomSeq.__len__()]:
-            # if the first number of the bottom part of the pair is equal to number in the top sequence at the same position
-            newSeq.topSeq.extend(pair.top)
-            newSeq.bottomSeq.extend(pair.bottom)
-            newSeq.idList.append(pair.id)
+        if newSeq.isExtendable(pair):  # check if the pair can be connected to the current sequence
+            newSeq.extend(pair)  # extend the sequence with the pair
             if checkSeq(newSeq):
                 # if the sequence is valid
                 possibleSeq.append(newSeq)
@@ -158,7 +159,7 @@ def findSeqDFS(seq, pairList, itter):
     for newSeq in possibleSeq:
         if DEBUG:
             print("Trying seq at itter " + str(itter))
-            newSeq.print()
+            print(newSeq)
 
         # check if the sequence is complete
         if newSeq.topSeq.__len__() == newSeq.bottomSeq.__len__():
@@ -268,4 +269,7 @@ def main():
     #TODO: add output file option
 
 if __name__ == "__main__":
+    start_time = time.time()
     main()
+    if DEBUG:
+        print("--- %s seconds ---" % (time.time() - start_time))
