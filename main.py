@@ -145,7 +145,7 @@ def parseArgs() -> argparse.Namespace:
         Available algorithms: DFS, BFS,', default='BFS')
     parser.add_argument("-d", "--debug", help="increase output verbosity", action="store_true")
     parser.add_argument('--outputFile', '-o', type=argparse.FileType('w'), help='output file')
-    parser.add_argument("--starting-sequence", "-starting-sequence", type=argparse.FileType('r'), help="file containing the starting sequences")
+    parser.add_argument("--starting-sequence", "-starting-sequence", type=argparse.FileType('r'), help="file containing the starting sequence(s)")
     return parser.parse_args()
 
 def findSeqDFS(seq: Seq, pairList: list, itter: int) -> bool:

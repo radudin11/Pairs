@@ -43,3 +43,18 @@
 
         After that, it checks if,by adding the pair, the two sequences would match up until the last 
         number of the shorter sequence part.
+
+4) Options
+    -h, --help            show this help message and exit
+  --inputFile INPUTFILE, -f INPUTFILE
+                        input file
+  --max-itter MAX_ITTER, -max-itter MAX_ITTER
+                        maximum number of itterations, default is 10 For the best performance use the length of the sollution(if known) as the      
+                        maximum number of itterations(matters only in DFS)
+  --algorithm ALGORITHM, -a ALGORITHM
+                        algorithm to use, default is BFS Available algorithms: DFS, BFS,
+  -d, --debug           increase output verbosity
+  --outputFile OUTPUTFILE, -o OUTPUTFILE
+                        output file
+  --starting-sequence STARTING_SEQUENCE, -starting-sequence STARTING_SEQUENCE
+                        file containing the starting sequence(s)
