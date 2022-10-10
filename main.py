@@ -16,6 +16,7 @@ import argparse
 from io import BufferedReader
 import time
 import sys
+from tokenize import String
 
 MAX_ITTER = 10
 DEBUG = False
@@ -138,13 +139,13 @@ def parseArgs() -> argparse.Namespace:
         so that the numbers resulted from the concatenation of the pairs are equal')
 
     parser.add_argument('--inputFile', '-f', type=argparse.FileType('r'), help='input file')
-    parser.add_argument('--max-itter', type=int, help='maximum number of itterations, default is 10\n For the best performance \
+    parser.add_argument('--max-itter', "-max-itter", type=int, help='maximum number of itterations, default is 10\n For the best performance \
         use the length of the sollution(if known) as the maximum number of itterations(matters only in DFS)')
     parser.add_argument('--algorithm', '-a', type=str, help='algorithm to use, default is BFS\n \
-        Available algorithms: DFS, BFS')
+        Available algorithms: DFS, BFS,', default='BFS')
     parser.add_argument("-d", "--debug", help="increase output verbosity", action="store_true")
     parser.add_argument('--outputFile', '-o', type=argparse.FileType('w'), help='output file')
-
+    parser.add_argument("--starting-sequence", "-starting-sequence", type=argparse.FileType('r'), help="file containing the starting sequences")
     return parser.parse_args()
 
 def findSeqDFS(seq: Seq, pairList: list, itter: int) -> bool:
@@ -153,6 +154,8 @@ def findSeqDFS(seq: Seq, pairList: list, itter: int) -> bool:
     # if we have reached the maximum number of itterations => no solution
     if (itter > MAX_ITTER):
         return False
+
+    # 
 
     # get all possible pairs that can be connected to the current sequence
     possibleSeq = nextSeq(seq, pairList)
@@ -228,6 +231,35 @@ def hasSequenceBFS(pairList: list, possibleSeq: list):
     # if no sequence was found after MAX_ITTER itterations => no solution
     print("no")
 
+def parseStartingSequence(line, pairList: list) -> Seq:
+    # parse the starting sequence from a file
+    # return a Seq object
+
+    seq = Seq([], [], [])
+    for pairID in line.split():
+        pair = pairList[int(pairID) - 1]
+        seq.extend(pair)
+    return seq
+
+def readSeqFromFile(file: argparse.FileType, pairList: list) -> list:
+    # read the starting sequences from a file
+    # return a list of sequences
+
+    seqList = []
+    lineNum = 0
+    for line in file:
+        lineNum += 1
+        line = line.strip("[,]")
+        if line == "":
+            continue
+        seq = parseStartingSequence(line, pairList)
+        if checkSeq(seq):
+            seqList.append(seq)
+        else:
+            print("Invalid starting sequence at line " + str(lineNum))
+    print("")
+    return seqList
+
 def main():
     start_time = time.time()
     args = parseArgs()
@@ -253,7 +285,10 @@ def main():
         printPairs(pairList)
 
     # find all possible sequences that can start a sequence
-    possibleSeq = startSeq(pairList)
+    if args.starting_sequence:
+        possibleSeq = readSeqFromFile(args.starting_sequence, pairList)
+    else:
+        possibleSeq = startSeq(pairList)
     if possibleSeq.__len__() == 0:
         print("no")
         return
@@ -270,11 +305,6 @@ def main():
             hasSequenceBFS(pairList, possibleSeq)
         else:
             print("Invalid algorithm")
-    else:
-        # use BFS by default
-        if DEBUG:
-            print("Using BFS...\n")
-        hasSequenceBFS(pairList, possibleSeq)
     if DEBUG: # print the execution time
         print("--- %s seconds ---" % (time.time() - start_time))
     
