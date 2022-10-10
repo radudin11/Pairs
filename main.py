@@ -15,6 +15,7 @@ import copy
 import argparse
 from io import BufferedReader
 import time
+import sys
 
 MAX_ITTER = 10
 DEBUG = False
@@ -142,6 +143,7 @@ def parseArgs() -> argparse.Namespace:
     parser.add_argument('--algorithm', '-a', type=str, help='algorithm to use, default is BFS\n \
         Available algorithms: DFS, BFS')
     parser.add_argument("-d", "--debug", help="increase output verbosity", action="store_true")
+    parser.add_argument('--outputFile', '-o', type=argparse.FileType('w'), help='output file')
 
     return parser.parse_args()
 
@@ -227,6 +229,7 @@ def hasSequenceBFS(pairList: list, possibleSeq: list):
     print("no")
 
 def main():
+    start_time = time.time()
     args = parseArgs()
 
     if args.max_itter:
@@ -235,6 +238,9 @@ def main():
     if args.debug:
         global DEBUG
         DEBUG = True
+    
+    if args.outputFile:
+        sys.stdout = args.outputFile
     
     if args.inputFile:
         pairList = readPairs(args.inputFile)
@@ -269,11 +275,8 @@ def main():
         if DEBUG:
             print("Using BFS...\n")
         hasSequenceBFS(pairList, possibleSeq)
-    
-    #TODO: add output file option
-
-if __name__ == "__main__":
-    start_time = time.time()
-    main()
     if DEBUG: # print the execution time
         print("--- %s seconds ---" % (time.time() - start_time))
+    
+if __name__ == "__main__":
+    main()
