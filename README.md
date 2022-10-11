@@ -46,15 +46,23 @@
 
 4) Options
     -h, --help            show this help message and exit
-  --inputFile INPUTFILE, -f INPUTFILE
+
+    --inputFile INPUTFILE, -f INPUTFILE
                         input file
-  --max-itter MAX_ITTER, -max-itter MAX_ITTER
-                        maximum number of itterations, default is 10 For the best performance use the length of the sollution(if known) as the      
-                        maximum number of itterations(matters only in DFS)
-  --algorithm ALGORITHM, -a ALGORITHM
+                        
+    --max-itter MAX_ITTER, -max-itter MAX_ITTER
+                        maximum number of itterations, default is 10 For the best performance use the length of the sollution(if known) as the maximum number of itterations(matters only in DFS)
+
+    --algorithm ALGORITHM, -a ALGORITHM
                         algorithm to use, default is BFS Available algorithms: DFS, BFS,
-  -d, --debug           increase output verbosity
-  --outputFile OUTPUTFILE, -o OUTPUTFILE
+
+    -d, --debug           increase output verbosity
+
+    --outputFile OUTPUTFILE, -o OUTPUTFILE
                         output file
-  --starting-sequence STARTING_SEQUENCE, -starting-sequence STARTING_SEQUENCE
+
+    --starting-sequence STARTING_SEQUENCE, -starting-sequence STARTING_SEQUENCE
                         file containing the starting sequence(s)
+
+    --get-lastSequence GET_LASTSEQUENCE, -get-lastSequence GET_LASTSEQUENCE, -gls GET_LASTSEQUENCE
+                        file to write the last sequences if no solution is found

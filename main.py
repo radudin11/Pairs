@@ -13,13 +13,16 @@
 
 import copy
 import argparse
-from io import BufferedReader
+from io import BufferedReader, BufferedWriter
 import time
 import sys
 from tokenize import String
 
 MAX_ITTER = 10
 DEBUG = False
+GET_LAST_SEQUENCE = False
+LAST_SEQUENCE_FILE = None
+
 
 
 class Pair:
@@ -155,17 +158,26 @@ def parseArgs() -> argparse.Namespace:
                         type=argparse.FileType('w'), help='output file')
     parser.add_argument("--starting-sequence", "-starting-sequence",
                         type=argparse.FileType('r'), help="file containing the starting sequence(s)")
+    parser.add_argument("--get-lastSequence", "-get-lastSequence", "-gls", type = argparse.FileType('w'), help="file to write the last sequences \
+        if no solution is found")
     return parser.parse_args()
 
+
+def writeLastSequence(lastSequence: list, outputFile: BufferedWriter):
+    for seq in lastSequence:
+        for i in seq.idList:
+            outputFile.write(str(i) + " ")
+        outputFile.write("\n")
 
 def findSeqDFS(seq: Seq, pairList: list, itter: int) -> bool:
     # returns True if a valid sequence is found and False if not
 
     # if we have reached the maximum number of itterations => no solution
     if (itter > MAX_ITTER):
+        if GET_LAST_SEQUENCE:
+            writeLastSequence([seq], LAST_SEQUENCE_FILE)
         return False
 
-    #
 
     # get all possible pairs that can be connected to the current sequence
     possibleSeq = nextSeq(seq, pairList)
@@ -209,6 +221,8 @@ def findSequenceBFS(pairList: list, possibleSeq: list, itter: int) -> bool:
     # returns True if a valid sequence is found and False if not
 
     if itter > MAX_ITTER:
+        if GET_LAST_SEQUENCE:
+            writeLastSequence(possibleSeq, LAST_SEQUENCE_FILE)
         return False
     if possibleSeq.__len__() == 0:
         return False
@@ -243,6 +257,7 @@ def hasSequenceBFS(pairList: list, possibleSeq: list):
         return
     # if no sequence was found after MAX_ITTER itterations => no solution
     print("no")
+    
 
 
 def parseStartingSequence(line, pairList: list) -> Seq:
@@ -289,6 +304,12 @@ def main():
 
     if args.outputFile:
         sys.stdout = args.outputFile
+    
+    if args.get_lastSequence:
+        global GET_LAST_SEQUENCE
+        GET_LAST_SEQUENCE = True
+        global LAST_SEQUENCE_FILE
+        LAST_SEQUENCE_FILE = args.get_lastSequence
 
     if args.inputFile:
         pairList = readPairs(args.inputFile)
