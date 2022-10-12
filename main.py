@@ -17,6 +17,7 @@ from io import BufferedReader, BufferedWriter
 import time
 import sys
 from tokenize import String
+from turtle import pos
 
 MAX_ITTER = 10
 DEBUG = False
@@ -279,15 +280,14 @@ def readSeqFromFile(file: argparse.FileType, pairList: list) -> list:
     lineNum = 0
     for line in file:
         lineNum += 1
-        line = line.strip("[,]")
+        line = line.strip("[] \t")
         if line == "":
             continue
         seq = parseStartingSequence(line, pairList)
-        if checkSeq(seq):
+        if checkSeq(seq) and seq.idList.__len__() > 0 and seq not in seqList:
             seqList.append(seq)
         else:
-            print("Invalid starting sequence at line " + str(lineNum))
-    print("")
+            print("Invalid starting sequence at line " + str(lineNum) + "\n")
     return seqList
 
 
@@ -326,6 +326,7 @@ def main():
         possibleSeq = readSeqFromFile(args.starting_sequence, pairList)
     else:
         possibleSeq = startSeq(pairList)
+   
     if possibleSeq.__len__() == 0:
         print("no")
         return
